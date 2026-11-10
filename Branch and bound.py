@@ -3,7 +3,6 @@ import heapq
 import timeit
 import itertools
 
-# 1. Crear el DataFrame con los datos de los jugadores
 data = [
     {"name": "Ortega", "pos": "POR", "price": 9, "points": 5.8},
     {"name": "Lunin", "pos": "POR", "price": 6, "points": 4.6},
@@ -30,7 +29,6 @@ data = [
 
 df = pd.DataFrame(data)
 
-# Parámetros del problema
 quotas = {"POR": 1, "DEF": 4, "MED": 4, "DEL": 2}
 MAX_BUDGET = 100
 TOTAL_PLAYERS = 11
@@ -52,10 +50,9 @@ def branch_and_bound(df_players):
     initial_counts = {pos: 0 for pos in quotas}
     initial_bound = calculate_upper_bound(df_players, 0, 0, initial_counts)
     
-    # Contador único para evitar comparaciones entre diccionarios en el heap
     counter = itertools.count()
     
-    # Estructura: (-bound, -current_points, counter, index, cost, points, counts, team_indices)
+    
     pq = [(-initial_bound, 0, next(counter), 0, 0, 0, initial_counts, [])]
     
     best_points = -1.0
@@ -69,7 +66,7 @@ def branch_and_bound(df_players):
         
         nodes_opened += 1
         
-        # Poda por cota
+        
         if current_bound <= best_points:
             continue
             
@@ -80,7 +77,7 @@ def branch_and_bound(df_players):
                 best_team_indices = team_indices
             continue
             
-        # Si se acabaron los jugadores a evaluar
+        
         if index >= total_rows:
             continue
             
@@ -89,7 +86,7 @@ def branch_and_bound(df_players):
         price = player["price"]
         pts = player["points"]
         
-        # RAMA 1: Fichar al jugador actual
+        
         if counts.get(pos, 0) < quotas[pos] and cost + price <= MAX_BUDGET:
             new_counts = counts.copy()
             new_counts[pos] += 1
@@ -104,7 +101,7 @@ def branch_and_bound(df_players):
                     (-new_bound, -new_points, next(counter), index + 1, new_cost, new_points, new_counts, new_team)
                 )
                 
-        # RAMA 2: No fichar al jugador actual
+        
         remaining_slots = TOTAL_PLAYERS - len(team_indices)
         remaining_available = total_rows - (index + 1)
         
@@ -119,7 +116,7 @@ def branch_and_bound(df_players):
     best_team_df = df_players.iloc[best_team_indices].copy()
     return best_team_df, best_points, nodes_opened
 
-# 3. Ejecución y medición de rendimiento
+
 if __name__ == "__main__":
     start_time = timeit.default_timer()
     best_team_df, max_pts, nodes = branch_and_bound(df)
